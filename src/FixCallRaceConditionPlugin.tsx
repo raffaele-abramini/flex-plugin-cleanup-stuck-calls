@@ -2,8 +2,9 @@ import React from 'react';
 import * as Flex from '@twilio/flex-ui';
 import { FlexPlugin } from 'flex-plugin';
 
-import CustomTaskListContainer from './components/CustomTaskList/CustomTaskList.Container';
-import reducers, { namespace } from './states';
+import { ITask, Manager, Notifications, NotificationType, TaskHelper } from "@twilio/flex-ui";
+import { WorkerAcceptTaskActionPayload } from "@twilio/flex-ui/src/actions/WorkerActions";
+import { MainContent } from "./components/MainContent";
 
 const PLUGIN_NAME = 'FixCallRaceConditionPlugin';
 
@@ -11,6 +12,9 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
   constructor() {
     super(PLUGIN_NAME);
   }
+
+  manager?: Flex.Manager;
+  notificationID = "HANGUP_STUCK_CALL_NOTIFICATION";
 
   /**
    * This code is run when your plugin is being started
@@ -20,27 +24,35 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
    * @param manager { Flex.Manager }
    */
   init(flex: typeof Flex, manager: Flex.Manager) {
-    this.registerReducers(manager);
+    this.manager = manager;
 
-    const options: Flex.ContentFragmentProps = { sortOrder: -1 };
-    flex.AgentDesktopView
-      .Panel1
-      .Content
-      .add(<CustomTaskListContainer key="demo-component" />, options);
+    this.registerNotification();
+    flex.Actions.addListener("beforeAcceptTask", this.handleBeforeAcceptTask)
   }
 
-  /**
-   * Registers the plugin reducers
-   *
-   * @param manager { Flex.Manager }
-   */
-  private registerReducers(manager: Flex.Manager) {
-    if (!manager.store.addReducer) {
-      // tslint: disable-next-line
-      console.error(`You need FlexUI > 1.9.0 to use built-in redux; you are currently on ${Flex.VERSION}`);
+  registerNotification() {
+    Notifications.registerNotification({
+      type: NotificationType.warning,
+      id: this.notificationID,
+      content: (<MainContent notificationId={this.notificationID} />),
+      timeout: 0
+    });
+  }
+
+  handleBeforeAcceptTask = (payload: WorkerAcceptTaskActionPayload) => {
+    const { task } = payload;
+
+    if (!TaskHelper.isCallTask(task as ITask)) {
       return;
     }
 
-    manager.store.addReducer(namespace, reducers);
+    setTimeout(() => {
+      const { flex: flexState } = (this.manager as Manager).store.getState();
+      const currentTask = flexState.worker.tasks.get((task as ITask).sid);
+
+      if (flexState.phone.connection && currentTask && currentTask.status === "pending") {
+        Notifications.showNotification(this.notificationID);
+      }
+    }, 5000)
   }
 }
