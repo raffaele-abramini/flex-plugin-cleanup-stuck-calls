@@ -1,0 +1,51 @@
+{
+  "name": "plugin-fix-call-race-condition",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "bootstrap": "flex-check-start",
+    "build": "craco build",
+    "eject": "craco eject",
+    "postinstall": "npm run bootstrap",
+    "prestart": "npm run bootstrap",
+    "start": "craco start",
+    "test": "craco test --env=jsdom",
+    "coverage": "craco test --env=jsdom --coverage --watchAll=false"
+  },
+  "dependencies": {
+    "@craco/craco": "^5.0.2",
+    "@types/enzyme": "^3.10.1",
+    "@types/jest": "^24.0.12",
+    "@types/node": "^12.0.0",
+    "@types/react": "^16.8.16",
+    "@types/react-dom": "^16.8.4",
+    "@types/react-redux": "^7.1.1",
+    "babel-polyfill": "^6.26.0",
+    "core-js": "^2.6.5",
+    "craco-config-flex-plugin": "^2",
+    "enzyme": "^3.10.0",
+    "enzyme-adapter-react-16": "^1.14.0",
+    "flex-plugin": "^2",
+    "react": "16.5.2",
+    "react-dom": "16.5.2",
+    "react-scripts": "^3.0.0",
+    "react-test-renderer": "^16.8.6",
+    "redux": "3.7.2",
+    "typescript": "^3.4.5"
+  },
+  "devDependencies": {
+    "@twilio/flex-ui": "^1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

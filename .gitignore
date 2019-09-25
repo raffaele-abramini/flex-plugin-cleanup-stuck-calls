@@ -63,5 +63,4 @@ typings/
 # Flex related ignore
 appConfig.js
 build/
-
 .idea
