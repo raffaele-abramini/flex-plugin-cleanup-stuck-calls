@@ -1,8 +1,7 @@
 import React from 'react';
 import { Notifications, NotificationType, TaskHelper } from '@twilio/flex-ui';
 import { FlexPlugin } from 'flex-plugin';
-import { Controls } from './components/Controls'
-import * as styles from './components/styles'
+import { MainContent } from './components/MainContent'
 
 const PLUGIN_NAME = 'FixCallRaceConditionPlugin';
 
@@ -10,7 +9,8 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
   constructor() {
     super(PLUGIN_NAME);
   }
-  notificationID = "STUCK_CALL_NOTIFICATION";
+
+  notificationID = "HANGUP_STUCK_CALL_NOTIFICATION";
 
   /**
    * This code is run when your plugin is being started
@@ -20,7 +20,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
    * @param manager { import('@twilio/flex-ui').Manager }
    */
   init(flex, manager) {
-    this.flex = flex;
     this.manager = manager;
 
     this.registerNotification();
@@ -31,9 +30,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
     Notifications.registerNotification({
       type: NotificationType.warning,
       id: this.notificationID,
-      content: (
-        <styles.MainContainer>Something went wrong <Controls notificationId={this.notificationID} /></styles.MainContainer>
-      ),
+      content: (<MainContent notificationId={this.notificationID} />),
       timeout: 0
     });
   }
@@ -47,8 +44,9 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
     setTimeout(() => {
       const { flex: flexState } = this.manager.store.getState();
+      const currentTask = flexState.worker.tasks.get(payload.task.sid);
 
-      if (flexState.phone.connection && payload.task.status === "pending") {
+      if (flexState.phone.connection && currentTask && currentTask.status === "pending") {
         Notifications.showNotification(this.notificationID);
       }
     }, 5000)
