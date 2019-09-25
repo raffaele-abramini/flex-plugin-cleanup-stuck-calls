@@ -1,9 +1,7 @@
 import React from 'react';
 import * as Flex from '@twilio/flex-ui';
 import { FlexPlugin } from 'flex-plugin';
-
-import { ITask, Manager, Notifications, NotificationType, TaskHelper } from "@twilio/flex-ui";
-import { WorkerAcceptTaskActionPayload } from "@twilio/flex-ui/src/actions/WorkerActions";
+import { ITask, Manager, Notifications, NotificationType, TaskHelper, ActionPayload } from "@twilio/flex-ui";
 import { MainContent } from "./components/MainContent";
 
 const PLUGIN_NAME = 'FixCallRaceConditionPlugin';
@@ -39,7 +37,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
     });
   }
 
-  handleBeforeAcceptTask = (payload: WorkerAcceptTaskActionPayload) => {
+  handleBeforeAcceptTask = (payload: ActionPayload) => {
     const { task } = payload;
 
     if (!TaskHelper.isCallTask(task as ITask)) {
