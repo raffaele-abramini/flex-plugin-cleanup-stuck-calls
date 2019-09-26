@@ -1,17 +1,13 @@
-import * as React from 'react';
-import { Notifications, Actions } from '@twilio/flex-ui';
-import * as styles from './styles'
+import * as React from "react";
+import { Notifications, Actions } from "@twilio/flex-ui";
+import * as styles from "./styles";
 
 interface ControlsProps {
-    notificationId: string
+    notificationId: string;
 }
 
 export class Controls extends React.PureComponent<ControlsProps> {
     static defaultProps = {};
-
-    handleIgnoreClick = () => {
-        Notifications.dismissNotificationById(this.props.notificationId);
-    };
 
     handleHangupClick = () => {
         Notifications.dismissNotificationById(this.props.notificationId);
@@ -22,12 +18,11 @@ export class Controls extends React.PureComponent<ControlsProps> {
         return (
             <styles.MainContainer>
                 <styles.ButtonContainer>
-                    <styles.StyledButton type="button" onClick={this.handleIgnoreClick}>Ignore</styles.StyledButton>
-                </styles.ButtonContainer>
-                <styles.ButtonContainer>
-                    <styles.StyledButton type="button" onClick={this.handleHangupClick}>Hangup</styles.StyledButton>
+                    <styles.StyledButton type="button" onClick={this.handleHangupClick}>
+                        Cancel task
+                    </styles.StyledButton>
                 </styles.ButtonContainer>
             </styles.MainContainer>
-        )
+        );
     }
 }

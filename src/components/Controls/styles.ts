@@ -1,11 +1,11 @@
-import { styled, Button } from '@twilio/flex-ui'
+import { styled, Button } from "@twilio/flex-ui";
 
-export const MainContainer = styled('div')`
-  margin-left: auto;
-  display: flex;
+export const MainContainer = styled("div")`
+    margin-left: auto;
+    display: flex;
 `;
 
-export const ButtonContainer = styled('div')`
+export const ButtonContainer = styled("div")`
     display: flex;
     align-items: center;
     padding: 0 12px;
@@ -30,14 +30,14 @@ export const ButtonContainer = styled('div')`
 
 // @ts-ignore
 export const StyledButton = styled(Button)`
-  background: none;
-  font-size: 12px;
-  letter-spacing: 0;
-  height: auto;
-  padding: 0;
-  
-  &:hover {
-    background:none;
-  }
-`;
+    background: none;
+    font-size: 12px;
+    letter-spacing: 0;
+    height: auto;
+    padding: 0;
 
+    &:hover {
+        background: none;
+        text-decoration: underline;
+    }
+`;
