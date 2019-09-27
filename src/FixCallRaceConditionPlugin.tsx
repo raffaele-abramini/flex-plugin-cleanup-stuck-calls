@@ -113,7 +113,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
     hangupCallAndLog = (flavour: number, event: string) => {
         Actions.invokeAction("HangupCall", { task: {} });
-        console.warn(
+        console.error(
             `Voice call race condition detected - Scenario 1, flavour ${flavour}. Hanging an invalid call down on ${event}.`
         );
     };
