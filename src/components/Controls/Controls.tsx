@@ -4,14 +4,13 @@ import * as styles from "./styles";
 
 interface ControlsProps {
     notificationId: string;
+    onHangup: () => void;
 }
 
 export class Controls extends React.PureComponent<ControlsProps> {
-    static defaultProps = {};
-
     handleHangupClick = () => {
         Notifications.dismissNotificationById(this.props.notificationId);
-        Actions.invokeAction("HangupCall", { task: {} });
+        this.props.onHangup();
     };
 
     render() {

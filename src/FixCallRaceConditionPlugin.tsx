@@ -32,12 +32,17 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
         Notifications.registerNotification({
             type: NotificationType.warning,
             id: this.notificationID,
-            content: <MainContent notificationId={this.notificationID} />,
+            content: (
+                <MainContent
+                    notificationId={this.notificationID}
+                    onHangup={() => this.hangupCallAndLog(1, "timeout")}
+                />
+            ),
             timeout: 0
         });
     }
 
-    handleBeforeAcceptTask = async (payload: ActionPayload) => {
+    handleBeforeAcceptTask = (payload: ActionPayload) => {
         const { task } = payload;
 
         if (!TaskHelper.isCallTask(task as ITask)) {
@@ -65,7 +70,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
             const currentTask = tasks.get((task as ITask).sid);
             if (this.ifFlavorOne(connection, currentTask)) {
                 Notifications.showNotification(this.notificationID);
-                this.hangupCallAndLog(1, "timeout");
                 return;
             }
 
@@ -107,8 +111,10 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
     isAcceptedCallTask = (task: ITask) => TaskHelper.isCallTask(task as ITask) && task.status === "accepted";
 
-    hangupCallAndLog(flavour: number, event: string) {
+    hangupCallAndLog = (flavour: number, event: string) => {
         Actions.invokeAction("HangupCall", { task: {} });
-        console.warn(`Voice call race condition detected - Scenario 1, flavour ${flavour}. Hanging an invalid call down on ${event}.`);
-    }
+        console.warn(
+            `Voice call race condition detected - Scenario 1, flavour ${flavour}. Hanging an invalid call down on ${event}.`
+        );
+    };
 }
