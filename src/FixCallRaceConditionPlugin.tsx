@@ -1,7 +1,7 @@
 import React from "react";
 import * as Flex from "@twilio/flex-ui";
 import { FlexPlugin } from "flex-plugin";
-import { ITask, Manager, Notifications, NotificationType, TaskHelper, ActionPayload } from "@twilio/flex-ui";
+import { ITask, Manager, Notifications, NotificationType, TaskHelper, ActionPayload, Actions } from "@twilio/flex-ui";
 import { MainContent } from "./components/MainContent";
 
 const PLUGIN_NAME = "FixCallRaceConditionPlugin";
@@ -37,20 +37,78 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
         });
     }
 
-    handleBeforeAcceptTask = (payload: ActionPayload) => {
+    handleBeforeAcceptTask = async (payload: ActionPayload) => {
         const { task } = payload;
 
         if (!TaskHelper.isCallTask(task as ITask)) {
             return;
         }
 
-        setTimeout(() => {
-            const { flex: flexState } = (this.manager as Manager).store.getState();
-            const currentTask = flexState.worker.tasks.get((task as ITask).sid);
+        const { connection, tasks } = this.getStateProps();
 
-            if (flexState.phone.connection && currentTask && currentTask.status === "pending") {
+        // Before accepting the task, remove any existing call (matching flavor #2)
+        if (this.ifFlavorTwo(connection, tasks)) {
+            this.hangupCallAndLog(2, "before accepting task");
+        }
+
+        // A few seconds after accepting the tasks, check for clean-up
+        setTimeout(() => {
+            const { connection, tasks } = this.getStateProps();
+
+            // If there's not connection, no clean-up is needed
+            if (!connection) {
+                return;
+            }
+
+            // If flavour #1, let the agent know that we are hanging up the connection
+            // and removing the already cancelled reservation
+            const currentTask = tasks.get((task as ITask).sid);
+            if (this.ifFlavorOne(connection, currentTask)) {
                 Notifications.showNotification(this.notificationID);
+                this.hangupCallAndLog(1, "timeout");
+                return;
+            }
+
+            // If flavour #2, remove any existing call - so that there's no need to do it in the next "beforeAcceptTask" event
+            if (this.ifFlavorTwo(connection, tasks)) {
+                this.hangupCallAndLog(2, "timeout");
+                return;
             }
         }, 5000);
     };
+
+    getStateProps() {
+        const {
+            flex: {
+                phone: { connection },
+                worker: { tasks }
+            }
+        } = (this.manager as Manager).store.getState();
+
+        return {
+            connection,
+            tasks
+        };
+    }
+
+    ifFlavorOne(connection: any, currentTask: ITask) {
+        return connection && currentTask && currentTask.status === "pending";
+    }
+
+    ifFlavorTwo(connection: any, tasks: Map<string, ITask>) {
+        const tasksArr = Array.from(tasks.values());
+
+        if (!connection) {
+            return false;
+        }
+
+        return !tasksArr.length || !tasksArr.find(this.isAcceptedCallTask);
+    }
+
+    isAcceptedCallTask = (task: ITask) => TaskHelper.isCallTask(task as ITask) && task.status === "accepted";
+
+    hangupCallAndLog(flavour: number, event: string) {
+        Actions.invokeAction("HangupCall", { task: {} });
+        console.warn(`Voice call race condition detected - Scenario 1, flavour ${flavour}. Hanging an invalid call down on ${event}.`);
+    }
 }
