@@ -65,8 +65,8 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
                 return;
             }
 
-            // If flavour #1, let the agent know that we are hanging up the connection
-            // and removing the already cancelled reservation
+            // If flavour #1, let agents know that there's an invalid call and reservation
+            // and ask them if they want to hang it up
             const currentTask = tasks.get((task as ITask).sid);
             if (this.ifFlavorOne(connection, currentTask)) {
                 Notifications.showNotification(this.notificationID);
