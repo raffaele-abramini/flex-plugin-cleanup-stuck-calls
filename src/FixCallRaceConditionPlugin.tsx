@@ -35,7 +35,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
             content: (
                 <MainContent
                     notificationId={this.notificationID}
-                    onHangup={() => this.hangupCallAndLog(1, "timeout")}
+                    onHangup={this.hangupCallAndLog}
                 />
             ),
             timeout: 0
@@ -53,7 +53,10 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
         // Before accepting the task, remove any existing call (matching flavor #2)
         if (this.ifFlavorTwo(connection, tasks)) {
-            this.hangupCallAndLog(2, "before accepting task");
+            Notifications.showNotification(this.notificationID, {
+                flavour: 2,
+                event: "before accepting task"
+            });
         }
 
         // A few seconds after accepting the tasks, check for clean-up
@@ -69,13 +72,19 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
             // and removing the already cancelled reservation
             const currentTask = tasks.get((task as ITask).sid);
             if (this.ifFlavorOne(connection, currentTask)) {
-                Notifications.showNotification(this.notificationID);
+                Notifications.showNotification(this.notificationID, {
+                    flavour: 1,
+                    event: "timeout"
+                });
                 return;
             }
 
             // If flavour #2, remove any existing call - so that there's no need to do it in the next "beforeAcceptTask" event
             if (this.ifFlavorTwo(connection, tasks)) {
-                this.hangupCallAndLog(2, "timeout");
+                Notifications.showNotification(this.notificationID, {
+                    flavour: 2,
+                    event: "timeout"
+                });
                 return;
             }
         }, 5000);
@@ -111,7 +120,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
     isAcceptedCallTask = (task: ITask) => TaskHelper.isCallTask(task as ITask) && task.status === "accepted";
 
-    hangupCallAndLog = (flavour: number, event: string) => {
+    hangupCallAndLog = (flavour?: number, event?: string) => {
         Actions.invokeAction("HangupCall", { task: {} });
         console.warn(
             `Voice call race condition detected - Scenario 1, flavour ${flavour}. Hanging an invalid call down on ${event}.`
