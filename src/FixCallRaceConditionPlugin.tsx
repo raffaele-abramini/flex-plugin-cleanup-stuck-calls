@@ -26,6 +26,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
         this.registerNotification();
         flex.Actions.addListener("beforeAcceptTask", this.handleBeforeAcceptTask);
+        flex.Actions.addListener("beforeMonitorCall", this.handleMonitorCall);
     }
 
     registerNotification() {
@@ -43,73 +44,62 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
     }
 
     handleBeforeAcceptTask = (payload: ActionPayload) => {
-        const { task } = payload;
+        const { task }: { task: ITask } = payload;
 
-        if (!TaskHelper.isCallTask(task as ITask)) {
+        // If this is not a call tasks, don't do anything
+        if (!TaskHelper.isCallTask(task)) {
             return;
         }
 
-        const { connection, tasks } = this.getStateProps();
+        const connection = this.getPhoneConnectionFromState();
 
-        // Before accepting the task, remove any existing call (matching flavor #2)
-        if (this.ifFlavorTwo(connection, tasks)) {
+        // Before accepting the task, remove any existing call
+        if (this.ifFlavorTwo(connection)) {
             this.hangupCallAndLog(2, "before accepting task");
         }
 
         // A few seconds after accepting the tasks, check for clean-up
         setTimeout(() => {
-            const { connection, tasks } = this.getStateProps();
-
-            // If there's not connection, no clean-up is needed
-            if (!connection) {
-                return;
-            }
+            const connection = this.getPhoneConnectionFromState();
 
             // If flavour #1, let agents know that there's an invalid call and reservation
             // and ask them if they want to hang it up
-            const currentTask = tasks.get((task as ITask).sid);
-            if (this.ifFlavorOne(connection, currentTask)) {
+            if (this.ifFlavorOne(connection, task)) {
                 Notifications.showNotification(this.notificationID);
-                return;
-            }
-
-            // If flavour #2, remove any existing call - so that there's no need to do it in the next "beforeAcceptTask" event
-            if (this.ifFlavorTwo(connection, tasks)) {
-                this.hangupCallAndLog(2, "timeout");
                 return;
             }
         }, 5000);
     };
 
-    getStateProps() {
+    handleMonitorCall = () => {
+        const connection = this.getPhoneConnectionFromState();
+
+        return new Promise((res) => {
+            if (this.ifFlavorTwo(connection)) {
+                Notifications.showNotification(this.notificationID, { extraOnHangup:  res });
+            }
+        })
+    };
+
+    getPhoneConnectionFromState() {
         const {
             flex: {
-                phone: { connection },
-                worker: { tasks }
+                phone: { connection }
             }
         } = (this.manager as Manager).store.getState();
 
-        return {
-            connection,
-            tasks
-        };
+        return connection;
     }
 
     ifFlavorOne(connection: any, currentTask: ITask) {
-        return connection && currentTask && currentTask.status === "pending";
+        return (
+            connection && currentTask && currentTask.sourceObject.status === "pending"
+        );
     }
 
-    ifFlavorTwo(connection: any, tasks: Map<string, ITask>) {
-        const tasksArr = Array.from(tasks.values());
-
-        if (!connection) {
-            return false;
-        }
-
-        return !tasksArr.length || !tasksArr.find(this.isAcceptedCallTask);
+    ifFlavorTwo(connection: any) {
+        return connection;
     }
-
-    isAcceptedCallTask = (task: ITask) => TaskHelper.isCallTask(task as ITask) && task.status === "accepted";
 
     hangupCallAndLog = (flavour: number, event: string) => {
         Actions.invokeAction("HangupCall", { task: {} });
