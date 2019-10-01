@@ -89,15 +89,18 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
             if (this.ifFlavorTwo(connection)) {
                 Notifications.showNotification(this.monitorNotificationID, {
                     onHangup: () => {
-                        this.hangupCallAndLog(1, "timeout");
+                        this.hangupCallAndLog(2, "before monitor call");
                         resolve();
                     },
                     content: (
                         <>
-                            <styles.Bold>To monitor this call, cancel the pending task.</styles.Bold>
+                            Invalid call ongoing.
+                            <styles.Bold>To monitor this call, cancel the pending call.</styles.Bold>
                         </>
                     )
                 });
+            } else {
+                resolve();
             }
         });
     };
