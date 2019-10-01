@@ -3,6 +3,7 @@ import * as Flex from "@twilio/flex-ui";
 import { FlexPlugin } from "flex-plugin";
 import { ITask, Manager, Notifications, NotificationType, TaskHelper, ActionPayload, Actions } from "@twilio/flex-ui";
 import { MainContent } from "./components/MainContent";
+import * as styles from "./components/MainContent/styles";
 
 const PLUGIN_NAME = "FixCallRaceConditionPlugin";
 
@@ -33,12 +34,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
         Notifications.registerNotification({
             type: NotificationType.warning,
             id: this.notificationID,
-            content: (
-                <MainContent
-                    notificationId={this.notificationID}
-                    onHangup={() => this.hangupCallAndLog(1, "timeout")}
-                />
-            ),
+            content: <MainContent notificationId={this.notificationID} />,
             timeout: 0
         });
     }
@@ -65,7 +61,15 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
             // If flavour #1, let agents know that there's an invalid call and reservation
             // and ask them if they want to hang it up
             if (this.ifFlavorOne(connection, task)) {
-                Notifications.showNotification(this.notificationID);
+                Notifications.showNotification(this.notificationID, {
+                    content: (
+                        <>
+                            Sorry, the system isn’t responding. It looks like the caller has already hung up.{" "}
+                            <styles.Bold>To continue, cancel the pending task.</styles.Bold>
+                        </>
+                    ),
+                    onHangup: () => this.hangupCallAndLog(1, "timeout")
+                });
                 return;
             }
         }, 5000);
@@ -74,11 +78,21 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
     handleMonitorCall = () => {
         const connection = this.getPhoneConnectionFromState();
 
-        return new Promise((res) => {
+        return new Promise((resolve) => {
             if (this.ifFlavorTwo(connection)) {
-                Notifications.showNotification(this.notificationID, { extraOnHangup:  res });
+                Notifications.showNotification(this.notificationID, {
+                    onHangup: () => {
+                        this.hangupCallAndLog(1, "timeout");
+                        resolve();
+                    },
+                    content: (
+                        <>
+                            <styles.Bold>To monitor this call, cancel the pending task.</styles.Bold>
+                        </>
+                    )
+                });
             }
-        })
+        });
     };
 
     getPhoneConnectionFromState() {
@@ -92,9 +106,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
     }
 
     ifFlavorOne(connection: any, currentTask: ITask) {
-        return (
-            connection && currentTask && currentTask.sourceObject.status === "pending"
-        );
+        return connection && currentTask && currentTask.sourceObject.status === "pending";
     }
 
     ifFlavorTwo(connection: any) {

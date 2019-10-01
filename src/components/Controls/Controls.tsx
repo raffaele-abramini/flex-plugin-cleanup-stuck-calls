@@ -5,15 +5,13 @@ import * as styles from "./styles";
 interface ControlsProps {
     notificationId: string;
     onHangup: () => void;
-    extraOnHangup?: () => void;
 }
 
 export class Controls extends React.PureComponent<ControlsProps> {
     handleHangupClick = () => {
-        const { onHangup, extraOnHangup } = this.props;
+        const { onHangup } = this.props;
         Notifications.dismissNotificationById(this.props.notificationId);
         onHangup();
-        if (extraOnHangup) extraOnHangup();
     };
 
     render() {
