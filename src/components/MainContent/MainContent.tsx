@@ -6,8 +6,7 @@ interface MainContentProps {
     notificationId: string;
     notificationContext: {
         onHangup: () => void;
-        content: React.ReactChild
-    }
+    };
 }
 
 export class MainContent extends React.PureComponent<MainContentProps> {
@@ -17,15 +16,13 @@ export class MainContent extends React.PureComponent<MainContentProps> {
 
     render() {
         const {
-            notificationContext: {
-                content,
-                onHangup
-            }
+            notificationContext: { onHangup }
         } = this.props;
         return (
             <styles.MainContainer>
                 <span>
-                    {content}
+                    Sorry, the system isn’t responding. It looks like the caller has already hung up.{" "}
+                    <styles.Bold>To continue, cancel the pending task.</styles.Bold>
                 </span>
                 <Controls notificationId={this.props.notificationId} onHangup={onHangup} />
             </styles.MainContainer>

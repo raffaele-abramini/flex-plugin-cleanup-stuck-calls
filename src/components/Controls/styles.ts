@@ -35,6 +35,7 @@ export const StyledButton = styled(Button)`
     letter-spacing: 0;
     height: auto;
     padding: 0;
+    text-transform: uppercase;
 
     &:hover {
         background: none;

@@ -14,7 +14,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
     manager?: Flex.Manager;
     notificationID = "HANGUP_STUCK_CALL_NOTIFICATION";
-    monitorNotificationID = "HANGUP_STUCK_CALL_FOR_MONITORING_NOTIFICATION";
 
     /**
      * This code is run when your plugin is being started
@@ -35,12 +34,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
         Notifications.registerNotification({
             type: NotificationType.warning,
             id: this.notificationID,
-            content: <MainContent notificationId={this.notificationID} />,
-            timeout: 0
-        });
-        Notifications.registerNotification({
-            type: NotificationType.warning,
-            id: this.monitorNotificationID,
             content: <MainContent notificationId={this.notificationID} />,
             timeout: 0
         });
@@ -69,12 +62,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
             // and ask them if they want to hang it up
             if (this.ifFlavorOne(connection, task)) {
                 Notifications.showNotification(this.notificationID, {
-                    content: (
-                        <>
-                            Sorry, the system isn’t responding. It looks like the caller has already hung up.{" "}
-                            <styles.Bold>To continue, cancel the pending task.</styles.Bold>
-                        </>
-                    ),
                     onHangup: () => this.hangupCallAndLog(1, "timeout")
                 });
                 return;
@@ -85,23 +72,22 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
     handleMonitorCall = () => {
         const connection = this.getPhoneConnectionFromState();
 
-        return new Promise((resolve) => {
-            if (this.ifFlavorTwo(connection)) {
-                Notifications.showNotification(this.monitorNotificationID, {
-                    onHangup: () => {
-                        this.hangupCallAndLog(2, "before monitor call");
-                        resolve();
-                    },
-                    content: (
-                        <>
-                            Invalid call ongoing.
-                            <styles.Bold>To monitor this call, cancel the pending call.</styles.Bold>
-                        </>
-                    )
-                });
-            } else {
-                resolve();
+        const {
+            flex: {
+                worker: { tasks }
             }
+        } = (this.manager as Manager).store.getState();
+
+        const tasksArr: Array<ITask> = Array.from(tasks.values());
+
+        return new Promise((resolve) => {
+            if (
+                this.ifFlavorTwo(connection) &&
+                !tasksArr.find((t: ITask) => TaskHelper.isCallTask(t) && t.status === "accepted")
+            ) {
+                this.hangupCallAndLog(2, "before monitor call");
+            }
+            resolve();
         });
     };
 
