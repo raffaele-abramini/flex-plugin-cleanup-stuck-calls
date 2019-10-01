@@ -14,6 +14,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
     manager?: Flex.Manager;
     notificationID = "HANGUP_STUCK_CALL_NOTIFICATION";
+    monitorNotificationID = "HANGUP_STUCK_CALL_FOR_MONITORING_NOTIFICATION";
 
     /**
      * This code is run when your plugin is being started
@@ -34,6 +35,12 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
         Notifications.registerNotification({
             type: NotificationType.warning,
             id: this.notificationID,
+            content: <MainContent notificationId={this.notificationID} />,
+            timeout: 0
+        });
+        Notifications.registerNotification({
+            type: NotificationType.warning,
+            id: this.monitorNotificationID,
             content: <MainContent notificationId={this.notificationID} />,
             timeout: 0
         });
@@ -80,7 +87,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
         return new Promise((resolve) => {
             if (this.ifFlavorTwo(connection)) {
-                Notifications.showNotification(this.notificationID, {
+                Notifications.showNotification(this.monitorNotificationID, {
                     onHangup: () => {
                         this.hangupCallAndLog(1, "timeout");
                         resolve();
