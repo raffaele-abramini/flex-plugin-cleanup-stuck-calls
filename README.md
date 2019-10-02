@@ -1,4 +1,4 @@
-# Cleanup stuck call plugin
+# Cleanup stuck calls plugin
 
 This plugin addresses some issues related with stuck calls.
 
