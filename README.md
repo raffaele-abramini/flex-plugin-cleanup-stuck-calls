@@ -13,13 +13,13 @@ Make sure you have [Node.js](https://nodejs.org) as well as [`npm`](https://npmj
 Afterwards, install the dependencies by running `npm install`:
 
 ```bash
-cd 
+cd flex-plugin-cleanup-stuck-calls/
 
 # If you use npm
 npm install
 ```
 
-## Deploy
+## Build and deploy
 
 Run the following command to start the bundling:
 
@@ -28,5 +28,7 @@ npm run build
 ```
 
 Afterwards, you'll find in your project a `build/` folder that contains a file with the name of your plugin project. For example, `plugin-example.js`. Take this file and upload it into the Assets part of your Twilio Runtime.
+
+More info about deployment [here](https://www.twilio.com/docs/flex/deploying-plugins#deploying-flex-plugins-to-twilio-assets).
 
 Note: Common packages like `React`, `ReactDOM`, `Redux` and `ReactRedux` are not bundled with the build because they are treated as external dependencies so the plugin will depend on Flex to provide them globally.
