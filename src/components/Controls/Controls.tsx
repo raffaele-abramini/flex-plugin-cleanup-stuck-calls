@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Notifications, Actions } from "@twilio/flex-ui";
+import { Notifications } from "@twilio/flex-ui";
 import * as styles from "./styles";
 
 interface ControlsProps {

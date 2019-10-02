@@ -3,7 +3,6 @@ import * as Flex from "@twilio/flex-ui";
 import { FlexPlugin } from "flex-plugin";
 import { ITask, Manager, Notifications, NotificationType, TaskHelper, ActionPayload, Actions } from "@twilio/flex-ui";
 import { MainContent } from "./components/MainContent";
-import * as styles from "./components/MainContent/styles";
 
 const PLUGIN_NAME = "FixCallRaceConditionPlugin";
 

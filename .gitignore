@@ -62,5 +62,5 @@ typings/
 
 # Flex related ignore
 appConfig.js
-build/
+build/*.map.js
 .idea
