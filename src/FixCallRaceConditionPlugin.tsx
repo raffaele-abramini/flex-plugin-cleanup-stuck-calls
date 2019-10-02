@@ -80,15 +80,12 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
         const tasksArr: Array<ITask> = Array.from(tasks.values());
 
-        return new Promise((resolve) => {
-            if (
-                this.ifFlavorTwo(connection) &&
-                !tasksArr.find((t: ITask) => TaskHelper.isCallTask(t) && t.status === "accepted")
-            ) {
-                this.hangupCallAndLog(2, "before monitor call");
-            }
-            resolve();
-        });
+        if (
+            this.ifFlavorTwo(connection) &&
+            !tasksArr.find((t: ITask) => TaskHelper.isCallTask(t) && t.status === "accepted")
+        ) {
+            this.hangupCallAndLog(2, "before monitor call");
+        }
     };
 
     getPhoneConnectionFromState() {
