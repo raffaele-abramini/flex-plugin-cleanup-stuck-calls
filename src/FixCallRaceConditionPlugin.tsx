@@ -26,7 +26,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
 
         this.registerNotification();
         flex.Actions.addListener("beforeAcceptTask", this.handleBeforeAcceptTask);
-        flex.Actions.addListener("beforeMonitorCall", this.handleMonitorCall);
     }
 
     registerNotification() {
@@ -66,25 +65,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
                 return;
             }
         }, 5000);
-    };
-
-    handleMonitorCall = () => {
-        const connection = this.getPhoneConnectionFromState();
-
-        const {
-            flex: {
-                worker: { tasks }
-            }
-        } = (this.manager as Manager).store.getState();
-
-        const tasksArr: Array<ITask> = Array.from(tasks.values());
-
-        if (
-            this.ifFlavorTwo(connection) &&
-            !tasksArr.find((t: ITask) => TaskHelper.isCallTask(t) && t.status === "accepted")
-        ) {
-            this.hangupCallAndLog(2, "before monitor call");
-        }
     };
 
     getPhoneConnectionFromState() {
