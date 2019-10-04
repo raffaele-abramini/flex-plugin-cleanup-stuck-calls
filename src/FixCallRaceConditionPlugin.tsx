@@ -25,7 +25,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
         this.manager = manager;
 
         this.registerNotification();
-        flex.Actions.addListener("beforeAcceptTask", this.handleBeforeAcceptTask);
         flex.Actions.addListener("beforeMonitorCall", this.handleMonitorCall);
     }
 
@@ -37,36 +36,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
             timeout: 0
         });
     }
-
-    handleBeforeAcceptTask = (payload: ActionPayload) => {
-        const { task }: { task: ITask } = payload;
-
-        // If this is not a call tasks, don't do anything
-        if (!TaskHelper.isCallTask(task)) {
-            return;
-        }
-
-        const connection = this.getPhoneConnectionFromState();
-
-        // Before accepting the task, remove any existing call
-        if (this.ifFlavorTwo(connection)) {
-            this.hangupCallAndLog(2, "before accepting task");
-        }
-
-        // A few seconds after accepting the tasks, check for clean-up
-        setTimeout(() => {
-            const connection = this.getPhoneConnectionFromState();
-
-            // If flavour #1, let agents know that there's an invalid call and reservation
-            // and ask them if they want to hang it up
-            if (this.ifFlavorOne(connection, task)) {
-                Notifications.showNotification(this.notificationID, {
-                    onHangup: () => this.hangupCallAndLog(1, "timeout")
-                });
-                return;
-            }
-        }, 5000);
-    };
 
     handleMonitorCall = () => {
         const connection = this.getPhoneConnectionFromState();
