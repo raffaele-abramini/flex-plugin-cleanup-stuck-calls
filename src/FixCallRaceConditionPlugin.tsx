@@ -46,13 +46,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
             return;
         }
 
-        const connection = this.getPhoneConnectionFromState();
-
-        // Before accepting the task, remove any existing call
-        if (this.ifFlavorTwo(connection)) {
-            this.hangupCallAndLog(2, "before accepting task");
-        }
-
         // A few seconds after accepting the tasks, check for clean-up
         setTimeout(() => {
             const connection = this.getPhoneConnectionFromState();
