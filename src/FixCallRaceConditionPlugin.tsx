@@ -52,20 +52,6 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
         if (this.ifFlavorTwo(connection)) {
             this.hangupCallAndLog(2, "before accepting task");
         }
-
-        // A few seconds after accepting the tasks, check for clean-up
-        setTimeout(() => {
-            const connection = this.getPhoneConnectionFromState();
-
-            // If flavour #1, let agents know that there's an invalid call and reservation
-            // and ask them if they want to hang it up
-            if (this.ifFlavorOne(connection, task)) {
-                Notifications.showNotification(this.notificationID, {
-                    onHangup: () => this.hangupCallAndLog(1, "timeout")
-                });
-                return;
-            }
-        }, 5000);
     };
 
     handleMonitorCall = () => {
