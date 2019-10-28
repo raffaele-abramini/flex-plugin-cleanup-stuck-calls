@@ -98,7 +98,10 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
     }
 
     ifFlavorOne(connection: any, currentTask: ITask) {
-        return connection && currentTask && currentTask.sourceObject.status === "pending";
+        return connection
+            && currentTask
+            && currentTask.status === "pending"
+            && currentTask.attributes.direction !== "outbound";
     }
 
     ifFlavorTwo(connection: any) {
