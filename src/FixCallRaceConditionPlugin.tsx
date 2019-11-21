@@ -61,7 +61,7 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
             // and ask them if they want to hang it up
             if (this.ifFlavorOne(connection, task)) {
                 Notifications.showNotification(this.notificationID, {
-                    onHangup: () => this.hangupCallAndLog(1, "timeout")
+                    onHangup: () => this.hangupCall()
                 });
                 return;
             }
@@ -114,4 +114,8 @@ export default class FixCallRaceConditionPlugin extends FlexPlugin {
             `Voice call race condition detected - Scenario 1, flavour ${flavour}. Hanging an invalid call down on ${event}.`
         );
     };
+
+    hangupCall = () => {
+        Actions.invokeAction("HangupCall", { task: {} });
+    }
 }
