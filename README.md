@@ -5,6 +5,11 @@ This plugin addresses some issues related with stuck calls.
 1. It displays a notification that allows a worker to hangup a _frozen_ task.
 1. Automatically hangups broken calls before accepting a new call tasks or before starting monitoring a call.
 
+## Changelog
+
+### 1.1.0
+- Prevent double logs for Flex 1.15 onwards
+
 
 ## Setup
 
